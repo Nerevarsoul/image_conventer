@@ -9,6 +9,20 @@ from pprint import pprint
 from PIL import Image
 
 
+def get_resize_resolution(image, settings):
+    resolution = settings['convert']['resize']['resolution']
+    if (
+        settings['convert']['resize']['keep_orientation'] and
+        (
+            resolution[0] > resolution[1] and image.size[0] < image.size[1] or
+            resolution[0] < resolution[1] and image.size[0] > image.size[1]
+        )
+    ):
+        return [resolution[1], resolution[0]]
+    else:
+        return resolution
+
+
 def resize_image(path, new_path, settings):
     pprint(settings)
     with Image.open(path) as image:
@@ -16,7 +30,7 @@ def resize_image(path, new_path, settings):
             return
         file_type = image.format
         filename = image.filename.split('/')[-1]
-        image = image.resize(settings['convert']['resize']['resolution'], Image.ANTIALIAS)
+        image = image.resize(get_resize_resolution(image, settings), Image.ANTIALIAS)
         save_kwargs = {
             'format': file_type,
             'quality': settings['convert']['quality']
